@@ -1,0 +1,51 @@
+model{
+	for (i in 1:N){
+		titre[i] ~ dnorm(titre.mean[i], tau)
+		titre.mean[i] <- pair.mean[pair[i]] + date.effect[date[i]]
+	}
+	
+	for (j in 1:N.pair) {
+		pair.mean[j] ~ dnorm(pair.mean_underlying[j], tau.pair)
+		pair.mean_underlying[j] <- ref.effect[reference[j]] + vir.effect[virus[j]] - antigenic[] %*% X1[j,]
+	}
+	
+	intercept ~ dnorm(mean_titre, titre_var)
+	
+	for(d in 1:N.date){
+		date.effect[d] ~ dnorm(0, tau.date)
+	}
+	
+	for(r in 1:N.ref){
+		ref.effect[r] ~ dnorm(intercept, tau.ref)
+	}
+	
+	for(v in 1:N.vir){
+		vir.effect[v] ~ dnorm(0, tau.vir)
+	}
+	
+	# gamma prior for branch effects
+	for (x in 1:N.X1){
+		antigenic[x] <- ind[x]*antigenic_u[x]
+		antigenic_u[x] ~ dgamma(2, 1)
+		ind[x] ~ dbern(pind)
+	}
+	
+	pind ~ dbeta(0.5, 10)
+	
+	# priors on precisions etc.
+	tau ~ dgamma(0.001, 0.001)
+	tau.pair ~ dgamma(0.001, 0.001)
+	tau.date ~ dgamma(0.001,0.001)
+	tau.ref ~ dgamma(0.001,0.001)
+	tau.vir ~ dgamma(0.001,0.001)
+	
+	# convert precisions to SD for monitoring
+	sd <- sqrt(1/tau)
+	sd.pair <- sqrt(1/tau.pair)
+	sd.date <- sqrt(1/tau.date)
+	sd.ref <- sqrt(1/tau.ref)
+	sd.vir <- sqrt(1/tau.vir)
+	
+	#monitor# intercept, ref.effect, vir.effect, antigenic, ind, pind, sd, sd.pair
+}
+

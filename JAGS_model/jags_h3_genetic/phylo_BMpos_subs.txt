@@ -1,0 +1,67 @@
+# Phylogenetic control
+# Binary masks on positions
+# Substitution-specific antigenic effects are position-independent
+
+model{
+	for (i in 1:N){
+		titre[i] ~ dnorm(titre.mean[i], tau)
+		titre.mean[i] <- pair.mean[pair[i]] + date.eff[date[i]]
+	}
+		
+	# loop fits mean titres with an error term
+	for (j in 1:N.pair) {
+		pair.mean[j] ~ dnorm(pair.mean_underlying[j], tau.pair)
+		pair.mean_underlying[j] <- ref.eff[reference[j]] + vir.eff[virus[j]] - phylo.eff[] %*% phylo[j,] - sum(sub.effect[substitution[j,]] %*% pos.mean[])
+	}
+	
+	intercept ~ dnorm(mean_titre, titre_var)
+	
+	for(d in 1:N.date){
+		date.eff[d] ~ dnorm(0, tau.date)
+	}
+	
+	# priors on per-reference strain effects
+	for(r in 1:N.ref){
+		ref.eff[r] ~ dnorm(intercept, tau.ref)
+	}
+	
+	for(v in 1:N.vir){
+		vir.eff[v] ~ dnorm(0, tau.vir)
+	}
+	
+	# Phylogenetic control
+	for (c in 1:N.phylo) {
+		phylo.eff[c] ~ dgamma(0.001, 0.001)
+	}
+	
+	# Binary mask operates at position level
+	for (p in 1:N.pos) {
+		pos.mean[p] <- ind[p]
+		ind[p] ~ dbern(pind)
+	}
+	pind ~ dbeta(1, 5)
+	
+	# Effects for each substitution - sub.effect[1] means no change
+	# Effect sizes are independent
+	sub.effect[1] <- 0
+	for(s in 2:N.sub){
+		sub.effect[s] ~ dgamma(substitution_hyper, substitution_hyper)
+	}
+	
+	# priors on precisions etc.
+	tau ~ dgamma(0.001, 0.001)
+	tau.pair ~ dgamma(0.001, 0.001)
+	tau.date ~ dgamma(0.001,0.001)
+	tau.ref ~ dgamma(0.001,0.001)
+	tau.vir ~ dgamma(0.001,0.001)
+	tau.antig ~ dgamma(0.001,0.001)
+	
+	# convert precisions to SD for monitoring
+	sd <- sqrt(1/tau)
+	sd.pair <- sqrt(1/tau.pair)
+	sd.date <- sqrt(1/tau.date)
+	sd.ref <- sqrt(1/tau.ref)
+	sd.vir <- sqrt(1/tau.vir)
+	
+	#monitor# intercept, ref.eff, phylo.eff, sub.effect, ind, pind, substitution_hyper
+}
