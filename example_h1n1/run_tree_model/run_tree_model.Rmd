@@ -1,0 +1,98 @@
+---
+title: "Tree model"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+```
+
+
+This model described the phylogenetic model described in Harvey et al.  https://doi.org/10.1101/2022.03.26.485931. This formulation of the model is described by Eqs 1-2 with antigenic distance described by Eq 3.
+
+Here the model is run on a data set consisting of HI titres measured between 43 viruses used as reference strains from which antisera were generated and used in assays. This data is is a subset of that available from https://researchdata.gla.ac.uk/289/ (Datacite DOI: 10.5525/gla.researchdata.289). The full citation associated with use of this data is:
+
+Gregory, V., Harvey, W., Daniels, R. S., Reeve, R. , Whittaker, L., Halai, C., Douglas, A., Gonsalves, R., Skehel, J. J., Hay, A. J., McCauley, J. W. and Haydon, D.  (2016) Human former seasonal Influenza A(H1N1) haemagglutination inhibition data 1977-2009 from the WHO Collaborating Centre for Reference and Research on Influenza, London, UK. [Data Collection]
+
+The original research publication associated with this data is available at http://dx.doi.org/10.1371/journal.ppat.1005526.
+
+#### Packages
+
+This script uses the *runjags* package to interface with JAGS.
+
+```{r packages}
+library(runjags)
+```
+
+### Extract variables for model
+
+For JAGS input data, extract variables from data frame into numeric vectors. Model has hierarchical structure where one underlying titre is fitted per 'pair' (combination of reference strain and virus in the assay) so some variables are extracted from the full data frame whereas others are extracted from a subsetted data frame that consists of one observation per 'pair' only.
+
+```{r data}
+dat <- read.csv('../data_antigenic/h1n1_ref_viruses.csv', stringsAsFactors = F)
+pair.dat <- dat[!duplicated(dat$pair),]
+
+jags_data <- list()
+
+# Top level of hierarchy
+# extract data from full dataframe
+jags_data$titre <- log2(dat$titre)
+jags_data$date <- as.integer(as.factor(dat$date))
+jags_data$pair <- as.integer(as.factor(dat$pair))
+
+# Second level of hierarchy requires data per pair
+# extract reference, virus, and phylo terms from pair subset
+pair.dat <- pair.dat[with(pair.dat, order(pair)),]
+jags_data$reference <- as.integer(factor(pair.dat$reference))
+jags_data$virus <- as.integer(factor(pair.dat$virus))
+
+```
+
+The phylogenetic control element of the model is included by the presence of terms representing branches of the phylogeny that describes evolutionary relationships between the viruses present. Each column in X1 indicates whether the virus and reference strain combination represented by the row are separated by that branch in a line drawn between them through the tree. Therefore, a row representing a homologous titre (where a virus is tested using antisera raised against the same strain) will have zeros in each column.
+
+```{r data_phylo}
+
+# X1 - explanatory variables with negative effect on titre
+controls <- names(pair.dat)[grep(pattern = "^contr", names(pair.dat))]
+chalconts <- names(pair.dat)[grep(pattern = "^chalcont.[1-9]+[A-Z]",
+                                  names(pair.dat))]
+
+# combine branch variables and form a numeric matrix
+antigenic_vars <- c(controls, chalconts)
+jags_data$X1 <- as.matrix(pair.dat[, as.character(antigenic_vars)])
+jags_data$X1 <- jags_data$X1 * 1 # convert from T/F to 1/0
+jags_data$X1 <- jags_data$X1[,which(!colMeans(jags_data$X1) %in% c(0,1))] # remove invariant columns
+dim(jags_data$X1)
+
+```
+
+In the object representing the phylogenetic data, the number of rows is equal to the number of pairs of virus and reference strain in the antigenic data and the number of columns is equal to the number of branch terms being tested.
+
+```{r data_lengths}
+
+# Length variables for JAGS
+jags_data$N <- nrow(dat)
+jags_data$N.date <- length(unique(jags_data$date))
+jags_data$N.pair <- length(unique(jags_data$pair))
+jags_data$N.ref <- length(unique(jags_data$reference))
+jags_data$N.vir <- length(unique(jags_data$virus))
+jags_data$N.X1 <- ncol(jags_data$X1)
+
+jags_data$mean_titre <- mean(log2(dat$titre))
+jags_data$titre_var <- 1/1.5
+
+```
+
+### Run JAGS
+
+Use *run.jags()* to call JAGS using model saved in external file. Arguments can be amended to determine number of MCMC chains, chain lengths, initial values etc. here.
+
+```{r jags}
+
+# Run JAGS model
+mod.res <- run.jags(model = "../../JAGS_model/jags_h3_tree_only/h3_bm_latent_gamma.txt",
+                    data = jags_data, n.chains = 2, method = "parallel",
+                    adapt = 1000, burnin = 1000, sample = 100, thin = 10)
+save.image('tree_model.Rdata')
+
+```
