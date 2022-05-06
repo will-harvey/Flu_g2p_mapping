@@ -8,13 +8,13 @@ knitr::opts_chunk$set(echo = TRUE)
 ```
 
 
-This model described the phylogenetic model described in Harvey et al.  https://doi.org/10.1101/2022.03.26.485931. This formulation of the model is described by Eqs 1-2 with antigenic distance described by Eq 3.
+This model run in this script is the phylogenetic model described in Harvey et al.  https://doi.org/10.1101/2022.03.26.485931. This model of antigenic variation in HI titres is described by Eqs 1-2 with antigenic distance described by Eq 3.
 
 Here the model is run on a data set consisting of HI titres measured between 43 viruses used as reference strains from which antisera were generated and used in assays. This data is is a subset of that available from https://researchdata.gla.ac.uk/289/ (Datacite DOI: 10.5525/gla.researchdata.289). The full citation associated with use of this data is:
 
 Gregory, V., Harvey, W., Daniels, R. S., Reeve, R. , Whittaker, L., Halai, C., Douglas, A., Gonsalves, R., Skehel, J. J., Hay, A. J., McCauley, J. W. and Haydon, D.  (2016) Human former seasonal Influenza A(H1N1) haemagglutination inhibition data 1977-2009 from the WHO Collaborating Centre for Reference and Research on Influenza, London, UK. [Data Collection]
 
-The original research publication associated with this data is available at http://dx.doi.org/10.1371/journal.ppat.1005526.
+The original research publication associated with this data is available at Harvey et al. (2016) PLOS Pathogens 12: e1005526 http://dx.doi.org/10.1371/journal.ppat.1005526.
 
 #### Packages
 
@@ -92,7 +92,7 @@ Use *run.jags()* to call JAGS using model saved in external file. Arguments can 
 # Run JAGS model
 mod.res <- run.jags(model = "../../JAGS_model/jags_h3_tree_only/h3_bm_latent_gamma.txt",
                     data = jags_data, n.chains = 2, method = "parallel",
-                    adapt = 1000, burnin = 1000, sample = 100, thin = 10)
+                    adapt = 1000, burnin = 1000, sample = 100, thin = 20)
 save.image('tree_model.Rdata')
 
 ```

@@ -168,10 +168,10 @@ pre code {
 </div>
 
 
-<p>This model described the phylogenetic model described in Harvey et al. <a href="https://doi.org/10.1101/2022.03.26.485931" class="uri">https://doi.org/10.1101/2022.03.26.485931</a>. This formulation of the model is described by Eqs 1-2 with antigenic distance described by Eq 3.</p>
+<p>This model run in this script is the phylogenetic model described in Harvey et al. <a href="https://doi.org/10.1101/2022.03.26.485931" class="uri">https://doi.org/10.1101/2022.03.26.485931</a>. This model of antigenic variation in HI titres is described by Eqs 1-2 with antigenic distance described by Eq 3.</p>
 <p>Here the model is run on a data set consisting of HI titres measured between 43 viruses used as reference strains from which antisera were generated and used in assays. This data is is a subset of that available from <a href="https://researchdata.gla.ac.uk/289/" class="uri">https://researchdata.gla.ac.uk/289/</a> (Datacite DOI: 10.5525/gla.researchdata.289). The full citation associated with use of this data is:</p>
 <p>Gregory, V., Harvey, W., Daniels, R. S., Reeve, R. , Whittaker, L., Halai, C., Douglas, A., Gonsalves, R., Skehel, J. J., Hay, A. J., McCauley, J. W. and Haydon, D. (2016) Human former seasonal Influenza A(H1N1) haemagglutination inhibition data 1977-2009 from the WHO Collaborating Centre for Reference and Research on Influenza, London, UK. [Data Collection]</p>
-<p>The original research publication associated with this data is available at <a href="http://dx.doi.org/10.1371/journal.ppat.1005526" class="uri">http://dx.doi.org/10.1371/journal.ppat.1005526</a>.</p>
+<p>The original research publication associated with this data is available at Harvey et al. (2016) PLOS Pathogens 12: e1005526 <a href="http://dx.doi.org/10.1371/journal.ppat.1005526" class="uri">http://dx.doi.org/10.1371/journal.ppat.1005526</a>.</p>
 <div id="packages" class="section level4">
 <h4>Packages</h4>
 <p>This script uses the <em>runjags</em> package to interface with JAGS.</p>
@@ -227,7 +227,7 @@ jags_data$titre_var &lt;- 1/1.5</code></pre>
 <pre class="r"><code># Run JAGS model
 mod.res &lt;- run.jags(model = &quot;../../JAGS_model/jags_h3_tree_only/h3_bm_latent_gamma.txt&quot;,
                     data = jags_data, n.chains = 2, method = &quot;parallel&quot;,
-                    adapt = 1000, burnin = 1000, sample = 100, thin = 10)</code></pre>
+                    adapt = 1000, burnin = 1000, sample = 100, thin = 20)</code></pre>
 <pre><code>## Warning: No initial values were provided - JAGS will use the same initial values
 ## for all chains</code></pre>
 <pre><code>## Warning: You attempted to start parallel chains without setting different PRNG
@@ -236,7 +236,7 @@ mod.res &lt;- run.jags(model = &quot;../../JAGS_model/jags_h3_tree_only/h3_bm_la
 <pre><code>## Calling 2 simulations using the parallel method...
 ## Following the progress of chain 1 (the program will wait for all chains
 ## to finish before continuing):
-## Welcome to JAGS 4.3.0 on Tue Apr 12 14:15:09 2022
+## Welcome to JAGS 4.3.0 on Fri May  6 09:42:37 2022
 ## JAGS is free software and comes with ABSOLUTELY NO WARRANTY
 ## Loading module: basemod: ok
 ## Loading module: bugs: ok
@@ -257,12 +257,11 @@ mod.res &lt;- run.jags(model = &quot;../../JAGS_model/jags_h3_tree_only/h3_bm_la
 ## . Updating 1000
 ## -------------------------------------------------| 1000
 ## ************************************************** 100%
-## . . . . . . . . . Updating 1000
-## -------------------------------------------------| 1000
+## . . . . . . . . . Updating 2000
+## -------------------------------------------------| 2000
 ## ************************************************** 100%
 ## . . . . Updating 0
 ## . Deleting model
-## . 
 ## All chains have finished
 ## Simulation complete.  Reading coda files...
 ## Coda files loaded successfully
