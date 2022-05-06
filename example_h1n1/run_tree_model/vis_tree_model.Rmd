@@ -1,0 +1,166 @@
+---
+title: "Tree model output"
+output: html_document
+---
+
+```{r setup, include=FALSE}
+knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(fig.width = 8.5)
+```
+
+This script shows how to map results from the model output to a previously contructed phylogenetic tree. For this visualisation, the ggtree package is called. The *ggplot2*
+
+```{r packages, message = F}
+library(ggplot2)
+library(ggtree)
+library(RColorBrewer)
+library(treeio)
+library(runjags)
+```
+
+
+## JAGS output
+
+This script inteprets the results of a Bayesian model run in JAGS using the script *run_tree_model.Rmd*.
+
+```{r JAGSoutput}
+load('tree_model.Rdata')
+# extract MCMC samples from JAGS output to dataframe
+mod <- rbind(as.data.frame(mod.res$mcmc[[1]]),
+             as.data.frame(mod.res$mcmc[[2]]))
+
+```
+
+
+## Phylogenetic data
+
+The phylogenetic model run using JAGS maps antigenic evolution to branches of the pylogenetic tree. The phylogenetic tree was generated from haemagglutinin HA1 gene sequence data using the program BEAST (http://beast.community).
+
+```{r tree}
+# read beast tree processed by sero2R.rb and with 'c' added to start of control names
+beast <- treeio::read.beast("../phylogeny/h1n1_ref_viruses_e.trees")
+# fortify() from ggtree package process tree into data frame with row per node
+beast_dat <- fortify(beast)
+
+# simple plot of time-scaled phylogeny
+ggtree(beast, mrsd = "2009-07-01") +
+  geom_tiplab(size = 2) +
+  scale_x_continuous(limits = c(1969, 2020)) + # limits added to give space for tip labels
+  theme_tree2()
+```
+
+To the BEAST maximum clade credibility tree, we added an identifier to each branch using a simple program tree2R.rb (https://github.com/richardreeve/tree2R). This program also generates a binary variable for each branch in the phylogenetic tree for each HI titre measurement. For each HI titre, this binary variable is 1 when a given branch separates the test virus and the virus used to generate antiserum in the HI assay. These binary variables are used to generate the phylogenetic model of antigenic evolution run in the script *run_tree_model.Rmd*.
+
+Below branches are labelled with their identifier.
+
+```{r tree controls}
+ggtree(beast, mrsd = "2009-07-01") +
+  geom_text(aes(x = branch, label = beast_dat$Control),
+            size = 2.5, vjust = -.5) +
+  scale_x_continuous(limits = c(1969, 2020)) + 
+  theme_tree2()
+```
+
+## Mapping JAGS output back to phylogeny
+
+A couple of functions are loaded to help map the output from JAGS back to the branches of the phylogenetic tree.
+
+```{r JAGS to tree}
+source('../../R/antigenic_to_tree.R')
+source('../../R/antigenic_to_treeDF.R')
+
+# functions to add info from JAGS to phylogeny
+beast_dat <- antigenic_to_treeDF(beast_dat, JAGS_results = mod,
+                                 branch_vec = colnames(jags_data$X1))
+beast <- antigenic_to_tree(beast, tree_dat = beast_dat)
+
+```
+
+### Binary mask variables
+
+Within the JAGS model, an binary mask parameter dictates whether an effect associated with the branch contributes to antigenic distances as measured by HI, or not.
+
+Branches with posterior values of 0 or 1 were excluded or included in each
+MCMC step sampled while values between 0 and 1 were included in a fraction of MCMC samples.
+
+```{r indicator variable}
+cat('All posterior mean values of this binary mask parameter:')
+print(beast_dat$ind)
+cat('Note: NA is associated with the root which was not modelled')
+
+cat('Number of branches with posterior mean = 0 (always excluded):',
+    sum(beast_dat$ind == 0, na.rm = T))
+
+cat('Number of branches with posterior mean = 1 (always included):',
+    sum(beast_dat$ind == 1, na.rm = T))
+```
+
+Posterior mean values for the indicator variable are present in the *beast_dat* dataframe but not the *beast* tree object so *aes(col = beast_dat$ind)* is used.
+
+In the plot darker shades of green indicate higher support in the data for an antigenic weight being assigned to a branch. Note that high support does not necessarily mean the antigenic weight assigned to the branch is large (though in practice, it is often easier for the model to attribute higher support for larger antigenic effects).
+
+```{r indicator variable 2}
+## Binary mask posterior mean values 
+ggtree(beast, mrsd = "2009-07-01", aes(col = beast_dat$ind)) +
+  geom_tiplab(size = 2, col = "grey10", inherit.aes = F) +
+  scale_x_continuous(limits = c(1969, 2020)) +
+  scale_color_gradientn(colours = brewer.pal(9, "YlGn")[3:9],
+                        guide = "colourbar",
+                        name = "Binary\nmask\nposterior\nmean") +
+  theme_tree2()
+
+```
+
+### Antigenic weights
+
+Antigenic weights can be plotted on the branches of the phylogeny in a similar way. These values have also been added to the tree object so can be used to scale branch lengths.
+
+In the plots below darker shades of red indicate higher antigenic weights associated with a branch. When two viruses are separated by such a branch with a higher antigneic weight, we expect them to be antigenically distinct and for HI assays measuring their antigenic similarity to record lower titres.
+
+```{r antigenic weights}
+
+## Binary mask posterior mean values 
+col_lab <- 'Antigenic\nweight\n(log2 HI units)'
+ggtree(beast, mrsd = "2009-07-01", aes(col = antigenic)) +
+  geom_tiplab(size = 2, col = "grey10", inherit.aes = F) +
+  scale_x_continuous(limits = c(1969, 2020)) +
+  scale_color_gradientn(colours = brewer.pal(7, "YlOrRd")[2:7],
+                        guide = "colourbar",
+                        name = col_lab) +
+  theme_tree2()
+
+### Plot again with branch lengths scaled by antigenic weights
+xlab <- expression("Cumulative antigenic distance from root (log"[2]~"HI units)")
+ggtree(beast, branch.length = "antigenic",
+       aes(col = antigenic)) +
+  geom_tiplab(size = 2, col = "grey10", inherit.aes = F) +
+  scale_x_continuous(breaks = seq(0, 7, 2),
+                     minor_breaks = seq(0, 7, 1),
+                     limits = c(0, 10)) +
+  scale_color_gradientn(colours = brewer.pal(7, "YlOrRd")[2:7],
+                        guide = "colourbar",
+                        name = col_lab) +
+  theme_tree2(bgcolor = "white",
+              panel.grid.major.x = element_line("grey92"),
+              panel.grid.minor.x = element_line(size = 0.1, colour = "grey92")) +
+  labs(caption = xlab)
+
+```
+
+### Antigenic distance from root
+
+Branch-specific antigenic weights can be used to calculate cumulative antigenic distance from the root for each node in the phylogeny. With these values mapped to the tree object, *ggtree* allows sorting of the phylogeny in the y-axis on these values as below.
+
+```{r antigenic distance root}
+### Plot again with branch lengths scaled by antigenic weights
+ylab <- expression("Cumulative antigenic distance from root (log"[2]~"HI units)")
+ggtree(beast, yscale = "dist.root", mrsd = "2009-07-01",
+       aes(col = antigenic)) +
+  scale_color_gradientn(colours = brewer.pal(7, "YlOrRd")[2:7],
+                        guide = "colourbar",
+                        name = col_lab) +
+  ylab(ylab) +
+  theme_minimal()
+
+```
+
