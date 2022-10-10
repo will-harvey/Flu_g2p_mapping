@@ -8,7 +8,7 @@ knitr::opts_chunk$set(echo = TRUE)
 knitr::opts_chunk$set(fig.width = 8.5)
 ```
 
-This script shows how to map results from the model output to a previously contructed phylogenetic tree. For this visualisation, the ggtree package is called. The *ggplot2*
+This script shows how to map results from the model output to a previously contructed phylogenetic tree. For this visualisation, the ggtree package is called. The plotting is done using the *ggtree* package which has some  *ggplot2*
 
 ```{r packages, message = F}
 library(ggplot2)
