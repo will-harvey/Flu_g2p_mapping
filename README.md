@@ -4,6 +4,10 @@ Model approaches for identifying genetic basis of antigenic variation
 
 This repository includes designed for the analysis of variation in titres recorded in antigenic assays (such as the haemagglutination inhibition (HI) assay or the virus neutralisation (VN) test). The methodology is described in a biorxiv preprint (Harvey et al. 2022 A Bayesian approach to incorporate structural data into the mapping of genotype to antigenic phenotype of influenza A(H3N2) viruses. https://doi.org/10.1101/2022.03.26.485931).
 
+Models are written to be run using JAGS (Just Another Gibbs Sampler), a program for analysis of Bayesian hierarchical models using Markov chain Monte Carlo (MCMC) simulation. For download instructions, see https://mcmc-jags.sourceforge.io.
+
+JAGS can be run from R using various packages including rjags and runjags. 
+
 ### Controlling for phylogenetic structure
 
 Phylogenetic comparative methods use information on the historical relationships of lineage to test evolutionary hypotheses. More closely related viruses share many traits and trait combinations as a result of their shared evolutionary history. Standard statistical approaches, which could be used to test relationships between characters (phenotypic or genetic), do not account for the non-independance of viruses that are a result of descent with modification.
