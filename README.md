@@ -14,7 +14,9 @@ Phylogenetic comparative methods use information on the historical relationships
 
 Amino acid substitutions in HA (and mutations in the influenza genome more generally) tend to be correlated with antigenic distance; this could be a direct causative relationship or may arise indirectly due to the shared evolutionary history of viruses. Several phylogenetic comparative approaches exist to account for phylogenetic structure however these tend to focus on traits that can be measured for each individual virus rather than measurements that represent similarity between viruses (as is the case with antigenic assays). An approach to account for phylogenetic structure when modelling variation in measurements representing similarity between pairs of taxa was presented in application to foot-and-mouth disease and VN titres (Reeve et al. 2010, PLOS Computational Biology https://doi.org/10.1371/journal.pcbi.1001027). The same approach was adapted for application to the analysis of influenza HI (Harvey et al. 2016 PLOS Pathogens www.doi.org/10.1371/journal.ppat.1005526).
 
-To implement this approach requires the generation of binary indicator variables for each branch. When a branch falls on a path  traced throuhg the phylogenetic tree along the branches falling between antisera and antigen, the associated indicator variable will be 1, otherwise it will be 0. An Rmarkdown script describes how to read a phylogenetic tree into R and generate these variables for a given dataset of viruses.
+To implement this approach requires the generation of binary indicator variables for each branch. When a branch falls on a path  traced throuhg the phylogenetic tree along the branches falling between antisera and antigen, the associated indicator variable will be 1, otherwise it will be 0.
+
+In the directory 'phylogenetic structure', an Rmarkdown script 'phylogenetic_variables.Rmd' describes how to read a phylogenetic tree into R and generate these variables for a given dataset of viruses. This script uses functions included in an R package called 'toolkitSeqTree' which is available at https://github.com/will-harvey/toolkit_seqTree.
 
 
 ### H1N1 example dataset
