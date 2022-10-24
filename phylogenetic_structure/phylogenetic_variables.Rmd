@@ -102,16 +102,20 @@ In an analysis exploring variation in some trait associated with a property of e
 
 ### Difference variables
 
-Logical variable for each node/branch and whether or not it is an ancestor of each taxa. This generates a set of variables with one observation per combination of taxa.
+Logical variable for each node/branch and whether or not it fals on a path between each pair of taxa. `generate_branch_vars()` generates a column/variable representing each node/branch and a row/observation per combination of taxa.
 
-To get an idea of how this variable works, first select a viewpoint virus then look for a variable for a node/branch, for which other taxa does this node/branch fall on the path between them (i.e. diff variable == TRUE)
+```{r}
+# generate_branch_vars() will produce
+dat <- generate_branch_vars(tree_dat, variable_type = 'difference', prefix = 'branch_')
+
+dat[1:6, 1:6]
+```
+
+To get an idea of how these variables look, first select a viewpoint virus then look for a variable for a node/branch. It is then possible to look at which taxa this node/branch fall on the path between them (i.e. diff variable == TRUE)
 
 ```{r}
 # regenerate clean version of tree_dat
 tree_dat <- fortify(tree)
-
-# merge output from generate_branch_vars() with tree_dat
-dat <- generate_branch_vars(tree_dat, variable_type = 'difference')
 
 # subset this df do that only one virus is present as 'label_1' then
 # left_join() using 'label_2'
@@ -129,8 +133,9 @@ ggtree(tree) +
   # colour/shape of tip nodes depend on whether the combination of them and 
   # the viewpoint virus are separated by the branch
   geom_point(data = subset(tree_dat, isTip == TRUE),
-             aes(col = diff_48, shape = diff_48), size = 2) +
+             aes(col = branch_48, shape = branch_48), size = 2) +
   scale_color_manual(values = c('forestgreen', 'goldenrod'))
 ```
 
-The above plot shows a small clade of viruses that are separated from the taxa labelled `'H1N1_A_FUKUSHIMA_141_2006'` for which `diff_48 == TRUE`. These branches are separated from all other viruses in the tree by branch/node 48. If a virus within this clade of 4 taxa is used as the viewpoint, the opposite will be true and `diff_48 == TRUE`
+The above plot shows a small clade of viruses that are separated from the taxa labelled `'H1N1_A_FUKUSHIMA_141_2006'` by a branch chosen for this explanation (branch 48) for which `diff_48 == TRUE`. This clade of four viruses are separated from all other viruses in the tree by branch/node 48, therefore if any pair of viruses being compared include one virus in this clade of four and one virus outwith this clade then `diff_48 == TRUE`.
+
