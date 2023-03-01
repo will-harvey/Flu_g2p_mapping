@@ -29,7 +29,8 @@ In the directory 'phylogenetic structure', an Rmarkdown script 'phylogenetic_var
 
 This dataset is a selection of seasonal influenza A(H3N2) HI titres produced by the Worldwide Influenza Centre. These data and matched phylogenetic and genetic variables are analysed in the original research article Harvey et al. 2022 https://doi.org/10.1101/2022.03.26.485931.
 
-- The phylogenetic tree described in the paper is located at 'dataset_h3n2/phylogeny/H3N2.trees'._
+- The phylogenetic tree described in the paper is located at 'dataset_h3n2/phylogeny/H3N2.trees'.
+- An HA1 amino acid alignment including all viruses analysed in the paper is located at 'dataset_h3n2/h3n2_ha1_aa.fasta'._
 
 The original research publication associated with this data set is:
 
