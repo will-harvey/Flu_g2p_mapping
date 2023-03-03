@@ -29,8 +29,11 @@ In the directory 'phylogenetic structure', an Rmarkdown script 'phylogenetic_var
 
 This dataset is a selection of seasonal influenza A(H3N2) HI titres produced by the Worldwide Influenza Centre. These data and matched phylogenetic and genetic variables are analysed in the original research article Harvey et al. 2022 https://doi.org/10.1101/2022.03.26.485931.
 
-- The phylogenetic tree described in the paper is located at 'dataset_h3n2/phylogeny/H3N2.trees'.
-- An HA1 amino acid alignment including all viruses analysed in the paper is located at 'dataset_h3n2/h3n2_ha1_aa.fasta'._
+- 'dataset_h3n2/phylogeny/H3N2.trees' - the phylogenetic tree described in the paper is located at.
+- 'dataset_h3n2/h3n2_ha1_aa.fasta' - An HA1 amino acid alignment including all viruses analysed in the paper is located at.
+- 'dataset_h3n2/h3n2_variables_phylo.rda' - An R data file with phylogenetic variables tested in antigenic analysis.
+- 'dataset_h3n2/h3n2_variables_aa_symm_.rda' - An R data file with genetic variables tested in antigenic analysis (amino acid substitutions are notated P10DN for a substitution between amino acids D and N at position 10. 'a' indicates no amino acid difference between test virus and reference strain). Symmetric, therefore D in virus and N in reference strain is treated as the same as N in virus and D in reference strain.
+- 'dataset_h3n2/h3n2_variables_aa_asym_.rda' - An R data file with genetic variables tested in antigenic analysis (amino acid substitutions are notated P10DN for a substitution between amino acids D and N at position 10. 'a' indicates no amino acid difference between test virus and reference strain). Symmetric, therefore D in virus and N in reference strain is NOT treated as the same as N in virus and D in reference strain.
 
 The original research publication associated with this data set is:
 
